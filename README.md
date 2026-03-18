@@ -1,52 +1,44 @@
-# RL Attribution WIP
+# RL Attribution Code
 
-This is a code-only snapshot of the RL attribution work in progress.
+This repo is the code side of an RL attribution project I've been building out.
 
-Right now the repo has:
+It has:
 
-- the exact finite-horizon attribution code
-- theorem-check code and tests
-- the small approximation bridge for local vs non-local vs replay vs recollection
-- scripts for running the toy experiments
+- exact finite-horizon attribution code
+- theorem checks and tests
+- a small approximation bridge for local vs non-local vs replay vs recollection
+- a few scripts for running the main checks and sweeps
 
-What it does not have:
+It does not have the paper drafts, PDFs, TeX, or old repo baggage. I wanted this copy to stay pretty focused.
 
-- paper drafts
-- PDFs
-- TeX files
-- generated result dumps from earlier runs
-- old external repo stuff
+## Where things stand
 
-## Status
+This is still a work in progress.
 
-This is still pretty rough.
+The exact side is in solid shape for small finite models. The approximation side is useful, but I still treat it as ongoing work, especially on the recollection side where the behavior can get noisy depending on the setup.
 
-The exact side is in decent shape: finite examples, theorem checks, decomposition code, and the conditioning / identification pieces are all there.
+## Layout
 
-The approximation side is usable, but not done. The replay comparisons are working. The recollection side is still noisy and depends a lot on the setup, so I would treat that part as experimental for now.
-
-## Repo layout
-
-- `rl_attr/` has the main package
-- `rl_attr/approx/` has the PPO-lite bridge and sweep code
+- `rl_attr/` is the main package
+- `rl_attr/approx/` has the approximation bridge code
 - `scripts/` has the runners
-- `tests/` has the unit and integration checks
+- `tests/` has the checks
 
-## Running
+## Quick start
 
-Base tests:
+Run the base tests:
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Approx bridge stuff needs the optional extras:
+If you want the approximation bridge too:
 
 ```bash
 pip install -e '.[approx]'
 ```
 
-Then you can run things like:
+Main scripts:
 
 ```bash
 python3 scripts/run_theorem_claim_checks.py
@@ -54,6 +46,6 @@ python3 scripts/run_approx_bridge_demo.py
 python3 scripts/run_approx_bridge_sweep.py
 ```
 
-## Notes
+## Note
 
-This repo is meant to stay focused on the code itself. If I add paper assets later, I’ll probably keep them somewhere else so this stays easier to move around.
+I'm keeping this repo code-only for now. If I need to park paper assets somewhere later, I'll keep them separate.

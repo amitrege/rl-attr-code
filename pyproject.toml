@@ -1,7 +1,7 @@
 [project]
 name = "rl-attr"
 version = "0.1.0"
-description = "Work-in-progress code for RL attribution experiments."
+description = "Code for exact and approximate RL attribution experiments."
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
