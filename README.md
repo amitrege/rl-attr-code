@@ -1,50 +1,129 @@
 # RL Attribution Code
 
-This repo is the code side of an RL attribution paper I've been building out.
+This repo is a code-first implementation of an RL attribution project.
 
-In simple terms, the main question here is:
+The main thing it is trying to study is not just "which data point helped?" in a loose sense, but the difference between a few attribution objects that are easy to confuse:
 
-If an RL agent saw one particular training event, how much did that actually matter?
+- local attribution, where you only look at the next update or nearby checkpoint
+- replay attribution, where you hold future data fixed and rerun training on cached buffers
+- recollection / interventional attribution, where removing one training occurrence can change the future data the learner will collect
 
-The code in this repo tries to answer that in a few different ways. Some of it is exact and small-scale, where everything can be checked directly. Some of it is more practical and approximate, where the goal is to compare local scores, replay-based scores, and recollection-style counterfactuals.
+That distinction is the whole point of the repo. A lot of the code exists to make those objects concrete, compare them on the same examples, and check when they agree or disagree.
 
-Right now it has:
+## What is in here
 
-- exact finite-horizon attribution code
-- theorem checks and tests
-- a small approximation bridge for local vs non-local vs replay vs recollection
-- a few scripts for running the main checks and sweeps
+There are really two layers.
 
-The exact side is mostly for toy settings where the attribution target can be computed cleanly. The approximation side is there for moving toward more realistic training loops without losing sight of what the exact target is supposed to mean.
+### 1. Exact finite-horizon attribution code
 
-## Where things stand
+This is the foundation layer. It works with finite adaptive models where the relevant quantities can be computed exactly rather than estimated.
 
-This is still a work in progress.
+That part of the repo includes:
 
-The exact side is in solid shape for small finite models. The approximation side is useful, but I still treat it as ongoing work, especially on the recollection side where the behavior can get noisy depending on the setup.
+- exact computation of the main finite-horizon attribution target
+- replay effects and interventional effects as separate objects
+- conditioning-ladder utilities, so you can see what changes when you condition on less history, exactly the realized prefix, or the full realized trajectory
+- exact finite examples for two-armed bandits and related small models
+- positive and negative identification examples
+- theorem-facing checks for recursion identities, replay-oracle insufficiency, and the identification boundary
 
-## Layout
+This layer is mainly in:
 
-- `rl_attr/` is the main package
-- `rl_attr/approx/` has the approximation bridge code
-- `scripts/` has the runners
+- `rl_attr/core.py`
+- `rl_attr/bandits.py`
+- `rl_attr/action_only.py`
+- `rl_attr/differentiable.py`
+- `rl_attr/examples.py`
+- `rl_attr/theorem_checks.py`
+
+The exact layer is the part I trust the most right now. It is small-scale by design, but it makes the attribution objects precise and lets me check theorem claims directly instead of hand-waving around them.
+
+### 2. Approximation bridge
+
+The second layer is a first pass at moving those ideas into a more realistic training loop.
+
+Right now that means:
+
+- a small PPO-like training setup on `CartPole-v1`
+- cached rollouts and checkpoints
+- row-level training occurrences
+- local snapshot TracIn-style scores
+- non-local replay TracIn-style scores
+- exact replay leave-one-out on fixed future buffers
+- recollected counterfactual effects from rerunning training after removing one occurrence
+- sweep code for comparing those methods across seeds and horizons
+
+This layer is mainly in:
+
+- `rl_attr/approx/common.py`
+- `rl_attr/approx/ppo_lite.py`
+- `rl_attr/approx/tracin.py`
+- `rl_attr/approx/compare.py`
+- `rl_attr/approx/sweep.py`
+
+The approximation code is not meant to claim that CartPole solves the problem. It is there as a bridge: same conceptual objects, but in a runnable on-policy setup where local, replay-based, and recollection-based scores can be compared on the same training occurrences.
+
+## What this repo is trying to do
+
+More concretely, the repo is trying to answer questions like:
+
+- When does replay agree with recollection, and when does it fail?
+- Does a non-local replay score track replay leave-one-out better than a local score?
+- When future data collection is adaptive, how badly can fixed-buffer replay miss the actual interventional effect?
+- In small exact models, can the theorem-side decompositions and identification results be checked numerically?
+
+So if you are looking for a polished general RL library, this is not that.
+
+If you are looking for code that makes the attribution objects explicit and lets you compare them carefully, that is what this repo is for.
+
+## Current status
+
+The exact side is in good shape for what it is supposed to do.
+
+It can already:
+
+- compute exact finite-horizon attribution quantities
+- validate theorem-style identities and witness examples
+- separate replay from recollection in controlled settings
+- check positive and negative identification cases
+
+The approximation side is useful, but still very much in progress.
+
+The replay side is the strongest part of that bridge right now. The recollection side is harder: it is slower, noisier, and more sensitive to the evaluation setup. In other words, the approximation code is good enough to expose real gaps and trends, but I would not treat it as a finished empirical pipeline yet.
+
+## Repo layout
+
+- `rl_attr/` has the main package
+- `rl_attr/approx/` has the approximation bridge
+- `scripts/` has the main runners
 - `tests/` has the checks
+
+## Main entry points
+
+The scripts are:
+
+- `scripts/run_theorem_claim_checks.py`
+  Runs the exact theorem-facing validation layer.
+- `scripts/run_approx_bridge_demo.py`
+  Runs one approximation-bridge comparison and writes out the score tables.
+- `scripts/run_approx_bridge_sweep.py`
+  Runs a broader multi-seed comparison sweep for the approximation layer.
 
 ## Quick start
 
-Run the base tests:
+Base test suite:
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-If you want the approximation bridge too:
+Optional approximation dependencies:
 
 ```bash
 pip install -e '.[approx]'
 ```
 
-Main scripts:
+Example runs:
 
 ```bash
 python3 scripts/run_theorem_claim_checks.py
@@ -52,6 +131,6 @@ python3 scripts/run_approx_bridge_demo.py
 python3 scripts/run_approx_bridge_sweep.py
 ```
 
-## Note
+## Scope
 
-I'm keeping this repo code-only for now. If I need to park paper assets somewhere later, I'll keep them separate.
+This repo is intentionally code-only. It does not include the paper drafts, TeX, PDFs, or imported external repos.
