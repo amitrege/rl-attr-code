@@ -1,14 +1,14 @@
 # RL Attribution Code
 
-This repo is a code-first implementation of an RL attribution project.
+This repo is an implementation of an RL attribution project. Unlike supervised learning, the plocy decides what data to collect - so attribution is more complicated.
 
-The main thing it is trying to study is not just "which data point helped?" in a loose sense, but the difference between a few attribution objects that are easy to confuse:
+The main thing it is trying to study is not just "which data point helped?", but the difference between a few attribution objects:
 
-- local attribution, where you only look at the next update or nearby checkpoint
+- local attribution, where you only look at the next update or nearby checkpoint (prior work)
 - replay attribution, where you hold future data fixed and rerun training on cached buffers
-- recollection / interventional attribution, where removing one training occurrence can change the future data the learner will collect
+- recollection / interventional attribution, where removing one training occurrence can change the future data the learner will collect (causal view)
 
-That distinction is the whole point of the repo. A lot of the code exists to make those objects concrete, compare them on the same examples, and check when they agree or disagree.
+A lot of the code exists to make those objects concrete, compare them on the same examples, and check when they agree or disagree.
 
 ## What is in here
 
@@ -25,7 +25,7 @@ That part of the repo includes:
 - conditioning-ladder utilities, so you can see what changes when you condition on less history, exactly the realized prefix, or the full realized trajectory
 - exact finite examples for two-armed bandits and related small models
 - positive and negative identification examples
-- theorem-facing checks for recursion identities, replay-oracle insufficiency, and the identification boundary
+- Checks for recursion identities, replay-oracle insufficiency, and the identification boundary
 
 This layer is mainly in:
 
@@ -36,7 +36,7 @@ This layer is mainly in:
 - `rl_attr/examples.py`
 - `rl_attr/theorem_checks.py`
 
-The exact layer is the part I trust the most right now. It is small-scale by design, but it makes the attribution objects precise and lets me check theorem claims directly instead of hand-waving around them.
+This the most complete part of the code base. It is small-scale for now, but it makes the attribution objects precise and lets me check theorem claims directly instead of hand-waving around them.
 
 ### 2. Approximation bridge
 
@@ -130,7 +130,3 @@ python3 scripts/run_theorem_claim_checks.py
 python3 scripts/run_approx_bridge_demo.py
 python3 scripts/run_approx_bridge_sweep.py
 ```
-
-## Scope
-
-This repo is intentionally code-only. It does not include the paper drafts, TeX, PDFs, or imported external repos.
