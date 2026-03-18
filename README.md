@@ -1,6 +1,6 @@
 # RL Attribution Code
 
-This repo is the code side of an RL attribution project I've been building out.
+This repo is the code side of an RL attribution paper I've been building out.
 
 It has:
 
@@ -9,7 +9,6 @@ It has:
 - a small approximation bridge for local vs non-local vs replay vs recollection
 - a few scripts for running the main checks and sweeps
 
-It does not have the paper drafts, PDFs, TeX, or old repo baggage. I wanted this copy to stay pretty focused.
 
 ## Where things stand
 
